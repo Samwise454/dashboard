@@ -45,7 +45,7 @@ const Admin = () => {
         })
         .then(data => {
             // Process the fetched image first and then send the form
-            console.log(data);
+            // console.log(data);
             if (data.code === "sw200") {
                 setAllData(data.msg);
                 loader.style.display = "none";
@@ -201,7 +201,7 @@ const Admin = () => {
                                 <option value="Female">Female</option>
                             </select>
 
-                            
+
                         </div>
                     </div>
                 </div>
