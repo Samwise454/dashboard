@@ -44,6 +44,7 @@ const Home = () => {
             })
             .then(response => {
                 if (!response.ok) {
+                    loader.style.display = "none";
                     handleFormError();
                 }
                 return response.json(); 
@@ -61,15 +62,17 @@ const Home = () => {
                 }
                 else {
                     //error
+                    loader.style.display = "none";
                     handleFormError();
                 }
             })
             .catch(error => {
+                loader.style.display = "none";
                 handleFormError();
             });
-            loader.style.display = "none";
         }
         else {
+            loader.style.display = "none";
             handleFormError();
         }
     }

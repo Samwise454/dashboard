@@ -103,6 +103,13 @@ body {
 #controlMsg, #searchMsg {
   display: none;
 }
+.conBtn {
+  background-color: #030154;
+  color: white;
+  padding: 0.8rem 0.6rem;
+  border: none;
+  cursor: pointer;
+}
 
 
 @media only screen and (min-width: 800px) {
