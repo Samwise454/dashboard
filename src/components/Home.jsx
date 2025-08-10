@@ -12,7 +12,7 @@ const Home = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (who !== null || who.length !== "") {
+        if (who !== null) {
             navigate("/Admin");
         }
     }, [who]);
