@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Nav from './Nav';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
     const url = 'https://smart.esbatech.org/control.php';
-    
+    const [who, setWho] = useState(localStorage.getItem("adForm"));
     const [formInput, setFormInput] = useState({
         username: "",
         password: ""
     });
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (who !== null || who.length !== "") {
+            navigate("/Admin");
+        }
+    }, [who]);
 
     const handleFormInput = (e) => {
         let userId = e.target.id;
