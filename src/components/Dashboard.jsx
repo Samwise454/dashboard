@@ -7,12 +7,16 @@ const Dashboard = () => {
     const urlLg = 'https://smart.esbatech.org/count.php';
     const searchUrl = 'https://smart.esbatech.org/search.php';
     const imgUrl = 'https://smart.esbatech.org/uploads/';
+    const imgAtmaUrl = 'https://atma.esbatech.org/atmaUploads/passport/';
+    const imgSmartUrl = 'https://smart.esbatech.org/uploads/';
+    const imgApgaUrl = 'https://apga.esbatech.org/uploads/';
 
     const [url, setUrl] = useState(window.location.href);
     const [fetchWho, setFetchWho] = useState(localStorage.getItem("adForm"));
     const [queryVal, setQueryVal] = useState({
         qKey: "", // query key
-        qVal: "" //query value
+        qVal: "", //query value
+        theBody: ""
     });
     const [fetchBy, setFetchBy] = useState("");
     const [load, setLoad] = useState(20);
@@ -54,6 +58,7 @@ const Dashboard = () => {
 
             let filterKey = filterUrlSplit[0];
             let filterValue = filterUrlSplit[1];
+            let tableName = filterUrlSplit[2];
 
             let quKey = "";
 
@@ -63,7 +68,51 @@ const Dashboard = () => {
 
                 let lgaCount = {
                     tCol: quKey,
-                    tData: filterValue
+                    tData: filterValue,
+                    tableName: tableName
+                }
+
+                //query to fetch number of people registered per local govt
+                fetch(urlLg, {
+                    method: "POST",
+                    body: JSON.stringify(lgaCount)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        setRegNum("0");
+                    }
+                    return response.json(); 
+                })
+                .then(data => {
+
+                    if (data.code === "sw200") {
+                        setRegNum(data.msg);
+                    }
+                    else {
+                        setRegNum("0");
+                    }
+                })
+                .catch(error => {
+                    setRegNum("0");
+                });
+            }
+            else if (filterKey === "genderAdmin") {
+                filterKey = "Gender";
+                quKey = "gender";
+            }
+            else if (filterKey === "ward") {
+                if (filterValue.includes("%20")) {
+                    filterValue = filterValue.replace("%20", " ");
+                    quKey = filterKey;
+                }
+                else {
+                    quKey = filterKey;
+                }
+
+                let lgaCount = {
+                    tCol: quKey,
+                    tData: filterValue,
+                    tableName: tableName
                 }
 
                 //query to fetch number of people registered per local govt
@@ -90,14 +139,11 @@ const Dashboard = () => {
                     setRegNum("0");
                 });
             }
-            else if (filterKey === "genderAdmin") {
-                filterKey = "Gender";
-                quKey = "gender";
-            }
 
             setQueryVal({
                 qKey: filterKey,
-                qVal: filterValue
+                qVal: filterValue,
+                theBody: tableName
             })
 
             setFetchBy(filterKey);
@@ -105,6 +151,7 @@ const Dashboard = () => {
             let payLoad = {
                 pKey: quKey,
                 pVal: filterValue,
+                tableName: tableName,
                 pCount: load
             }
 
@@ -121,7 +168,7 @@ const Dashboard = () => {
                 return response.json(); 
             })
             .then(data => {
-                // console.log(data.msg)
+                // console.log(data)
                 if (data.code === "sw200") {
                     setTempData(true);
                     setAllData(data.msg);
@@ -133,7 +180,7 @@ const Dashboard = () => {
                 }
             })
             .catch(error => {
-                navigate("/Admin");
+                navigate("/Admin");  
                 setTempData(false);
             });
         }
@@ -147,7 +194,8 @@ const Dashboard = () => {
         setSearchParam({
             search: e.target.value,
             sKey: queryVal.qKey,
-            sKeyVal: queryVal.qVal
+            sKeyVal: queryVal.qVal,
+            sBody: queryVal.theBody
         })
     }
 
@@ -178,7 +226,6 @@ const Dashboard = () => {
             return response.json(); 
         })
         .then(data => {
-            // console.log(data.msg)
             // Process the fetched image first and then send the form
             if (data.code === "sw200") {
                 setAllData(data.msg);
@@ -211,7 +258,7 @@ const Dashboard = () => {
                     <b>{queryVal.qVal + " " + fetchBy}</b>
                 :
                     <>
-                        Registered <b>{queryVal.qVal} Teachers</b>
+                        Filtered by {queryVal.qKey}: <b>{queryVal.qVal}</b>
                     </>
                 }
 
@@ -231,9 +278,9 @@ const Dashboard = () => {
                 <button onClick={handleSearch} className='text-sm bg-blue-950 text-white py-2 px-3 rounded-md cursor-pointer'>Search</button>
             </section>
 
-            {queryVal.qKey === "LGA"?
+            {queryVal.qKey === "LGA" || queryVal.qKey === "ward" ?
                 <section className='text-center text-sm mt-4 text-green-900'>
-                    <b>{regNum}</b> Teachers Registered
+                    <b>{regNum}</b> Person(s) Registered
                 </section>
             :   
                 <></>
@@ -243,7 +290,7 @@ const Dashboard = () => {
                 {tempData === false ?
                         <div className='card shadow-md p-2 gap-4 relative mb-5'>
                             <section>
-                                <img src="/subeb_logo.png" alt="Default Pic" className='dashImg rounded-md' />
+                                <img src="/an_logo.jpeg" alt="Default Pic" className='dashImg rounded-md' />
                             </section>
 
                             <section className='text-sm leading-6 mt-2'>
@@ -262,13 +309,34 @@ const Dashboard = () => {
                             return (
                                 <div className='card shadow-md p-2 gap-4 relative mb-5' key={dataIndex}>
                                     <section>
-                                        {/* <img src={imgUrl + data.img} alt="Teacher Pic" className='dashImg rounded-md' /> */}
-                                        <img src="" alt="Teacher Pic" className='dashImg rounded-md' />
+                                        {queryVal.theBody === "atma" ?
+                                            <>
+                                                <img src={imgAtmaUrl + data.img} alt="Teacher Pic" className='dashImg rounded-md' />
+                                                {/* <img src="" alt="Teacher Pic" className='dashImg rounded-md' /> */}
+                                            </>
+                                        :
+                                            queryVal.theBody === "apga" ?
+                                                <>
+                                                    <img src={imgApgaUrl + data.img} alt="Teacher Pic" className='dashImg rounded-md' />
+                                                    {/* <img src="" alt="Teacher Pic" className='dashImg rounded-md' /> */}
+                                                </>
+                                            :
+                                                queryVal.theBody === "smart" ?
+                                                    <>
+                                                        <img src={imgSmartUrl + data.img} alt="Teacher Pic" className='dashImg rounded-md' />
+                                                        {/* <img src="" alt="Teacher Pic" className='dashImg rounded-md' /> */}
+                                                    </>
+                                                :
+                                                    <>
+                                                        <img src={imgUrl + data.img} alt="Teacher Pic" className='dashImg rounded-md' />
+                                                        {/* <img src="" alt="Teacher Pic" className='dashImg rounded-md' /> */}
+                                                    </>
+                                        }
                                     </section>
 
                                     <section className='text-sm leading-6 mt-2'>
                                         <p>{data.name}</p>
-                                        <p>{data.tel}</p>
+                                        <p><b>{data.tel}</b></p>
                                         <p>{data.gender}</p>
                                         <p>{data.code}</p>
                                     </section>
